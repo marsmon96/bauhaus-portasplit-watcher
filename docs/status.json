@@ -1,8 +1,8 @@
 {
   "watcher_started_at": "2026-07-02T11:29:04.195840",
   "interval_seconds": 300,
-  "total_runs": 67,
-  "last_run_at": "2026-07-02T14:36:56.276037",
+  "total_runs": 68,
+  "last_run_at": "2026-07-02T12:38:50.078865",
   "sites": {
     "bauhaus": {
       "name": "Midea PortaSplit 12000 BTU (Bauhaus)",
@@ -21,8 +21,8 @@
     "obi": {
       "name": "Midea PortaSplit (OBI)",
       "url": "https://www.obi.de/p/8620890/midea-mobile-split-klimaanlage-portasplit",
-      "runs": 67,
-      "last_check_at": "2026-07-02T14:36:56.276037",
+      "runs": 68,
+      "last_check_at": "2026-07-02T12:38:50.078865",
       "raw_status": "InStoreOnly",
       "available": false,
       "price": 799.99,
