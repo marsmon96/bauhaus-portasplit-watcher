@@ -1,0 +1,45 @@
+{
+  "watcher_started_at": "2026-07-02T11:29:04.195840",
+  "interval_seconds": 120,
+  "total_runs": 60,
+  "last_run_at": "2026-07-02T13:33:04.642078",
+  "sites": {
+    "bauhaus": {
+      "name": "Midea PortaSplit 12000 BTU (Bauhaus)",
+      "url": "https://www.bauhaus.info/klimaanlagen/midea-klimasplitgeraet-portasplit-12000-btu/p/31934233",
+      "runs": 60,
+      "last_check_at": "2026-07-02T13:33:04.642078",
+      "raw_status": "OutOfStock/online_purchasability=false",
+      "available": false,
+      "price": "749.00",
+      "last_error": null,
+      "consecutive_errors": 0,
+      "last_notified": null
+    },
+    "obi": {
+      "name": "Midea PortaSplit (OBI)",
+      "url": "https://www.obi.de/p/8620890/midea-mobile-split-klimaanlage-portasplit",
+      "runs": 60,
+      "last_check_at": "2026-07-02T13:33:04.642078",
+      "raw_status": "InStoreOnly",
+      "available": false,
+      "price": 799.99,
+      "last_error": null,
+      "consecutive_errors": 0,
+      "last_notified": null
+    },
+    "amazon": {
+      "name": "Midea Klimaanlage PortaSplit (Amazon)",
+      "url": "https://www.amazon.de/Midea-Klimaanlage-Entfeuchten-Ventilieren-Silent-Modus/dp/B0D3PP64JS?th=1",
+      "runs": 60,
+      "last_check_at": "2026-07-02T13:33:04.642078",
+      "raw_status": "false",
+      "available": false,
+      "price": null,
+      "last_error": null,
+      "consecutive_errors": 0,
+      "last_notified": null
+    }
+  },
+  "email_configured": true
+}

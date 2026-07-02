@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Midea PortaSplit Watcher</title>
+<style>
+  :root {
+    --bg: #0f1216;
+    --card: #171b21;
+    --border: #262c35;
+    --text: #e6e9ef;
+    --text-dim: #8b93a1;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --amber: #f39c12;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 20px 60px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 28px; }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+  }
+  .dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text-dim);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 0 rgba(0,0,0,0);
+  }
+  .dot.green { background: var(--green); box-shadow: 0 0 12px rgba(46,204,113,0.55); }
+  .dot.red { background: var(--red); box-shadow: 0 0 12px rgba(231,76,60,0.55); }
+  .dot.amber { background: var(--amber); box-shadow: 0 0 12px rgba(243,156,18,0.55); }
+
+  .status-main { flex: 1; }
+  .status-label { font-size: 16px; font-weight: 600; }
+  .status-detail { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .stat-value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat-value.ok { color: var(--green); }
+  .stat-value.bad { color: var(--red); }
+  .stat-label { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  th, td { text-align: left; padding: 12px 16px; font-size: 13px; }
+  th { color: var(--text-dim); font-weight: 500; border-bottom: 1px solid var(--border); }
+  tbody tr:not(:last-child) td { border-bottom: 1px solid var(--border); }
+  td.site-name { font-weight: 600; }
+  td.site-name a { color: inherit; text-decoration: none; }
+  td.site-name a:hover { text-decoration: underline; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  }
+  .badge.avail { background: rgba(46,204,113,0.15); color: var(--green); }
+  .badge.unavail { background: rgba(139,147,161,0.15); color: var(--text-dim); }
+  .badge.error { background: rgba(231,76,60,0.15); color: var(--red); }
+
+  .price { font-variant-numeric: tabular-nums; }
+  .empty { color: var(--text-dim); font-size: 13px; padding: 24px; text-align: center; }
+  .error-text { color: var(--red); cursor: help; }
+  .dim { color: var(--text-dim); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Midea PortaSplit Watcher</h1>
+    <div class="subtitle">Automatische Verfügbarkeitsprüfung · aktualisiert sich alle paar Sekunden</div>
+
+    <div class="status-bar">
+      <div class="dot" id="dot"></div>
+      <div class="status-main">
+        <div class="status-label" id="statusLabel">Lade…</div>
+        <div class="status-detail" id="statusDetail"></div>
+      </div>
+      <div class="status-main" style="flex:0; text-align:right;">
+        <div class="status-label" id="countdown">–</div>
+        <div class="status-detail">nächster Check</div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="statSince">–</div>
+        <div class="stat-label">läuft seit</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statRuns">–</div>
+        <div class="stat-label">Läufe gesamt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statLastRun">–</div>
+        <div class="stat-label">letzter Check</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="statEmail">–</div>
+        <div class="stat-label" id="statEmailLabel">E-Mail-Versand</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Seite</th>
+          <th>Status</th>
+          <th>Preis</th>
+          <th>Mail gesendet</th>
+          <th>Fehler</th>
+          <th>Läufe</th>
+          <th>Letzter Check</th>
+        </tr>
+      </thead>
+      <tbody id="siteRows">
+        <tr><td colspan="7" class="empty">Lade Daten…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+<script>
+const REFRESH_MS = 3000;
+let statusData = null;
+
+function fmtRelative(iso) {
+  if (!iso) return "nie";
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if (diff < 5) return "gerade eben";
+  if (diff < 60) return `vor ${Math.floor(diff)}s`;
+  if (diff < 3600) return `vor ${Math.floor(diff / 60)} Min`;
+  if (diff < 86400) return `vor ${Math.floor(diff / 3600)} Std`;
+  return `vor ${Math.floor(diff / 86400)} Tagen`;
+}
+
+function fmtDuration(iso) {
+  if (!iso) return "–";
+  let diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  const days = Math.floor(diff / 86400); diff -= days * 86400;
+  const hours = Math.floor(diff / 3600); diff -= hours * 3600;
+  const mins = Math.floor(diff / 60); diff -= mins * 60;
+  const secs = diff;
+  const parts = [];
+  if (days) parts.push(`${days}T`);
+  if (hours || days) parts.push(`${hours}Std`);
+  parts.push(`${mins}Min`);
+  parts.push(`${secs}s`);
+  return parts.join(" ");
+}
+
+function fmtClock(iso) {
+  if (!iso) return "–";
+  return new Date(iso).toLocaleString("de-DE");
+}
+
+function render() {
+  if (!statusData) return;
+  const now = Date.now();
+  const lastRun = statusData.last_run_at ? new Date(statusData.last_run_at).getTime() : null;
+  const intervalMs = (statusData.interval_seconds || 120) * 1000;
+  const secondsSinceRun = lastRun ? (now - lastRun) / 1000 : Infinity;
+
+  const dot = document.getElementById("dot");
+  const label = document.getElementById("statusLabel");
+  const detail = document.getElementById("statusDetail");
+
+  if (!lastRun) {
+    dot.className = "dot";
+    label.textContent = "Noch kein Lauf";
+    detail.textContent = "Warte auf ersten Check";
+  } else if (secondsSinceRun < (statusData.interval_seconds * 3)) {
+    dot.className = "dot green";
+    label.textContent = "Aktiv";
+    detail.textContent = "Watcher läuft normal im Takt";
+  } else if (secondsSinceRun < 1800) {
+    dot.className = "dot amber";
+    label.textContent = "Verzögert";
+    detail.textContent = "Läuft evtl. gerade nicht (Mac im Ruhezustand?)";
+  } else {
+    dot.className = "dot red";
+    label.textContent = "Gestoppt";
+    detail.textContent = `Kein Check seit ${fmtDuration(statusData.last_run_at)}`;
+  }
+
+  document.getElementById("statSince").textContent = fmtDuration(statusData.watcher_started_at);
+  document.getElementById("statRuns").textContent = statusData.total_runs ?? "–";
+  document.getElementById("statLastRun").textContent = fmtRelative(statusData.last_run_at);
+
+  const emailEl = document.getElementById("statEmail");
+  const emailLabelEl = document.getElementById("statEmailLabel");
+  if (statusData.email_configured) {
+    emailEl.textContent = "Aktiv";
+    emailEl.className = "stat-value ok";
+    const notifiedTimes = Object.values(statusData.sites || {})
+      .map(s => s.last_notified).filter(Boolean).sort();
+    const lastNotified = notifiedTimes.length ? notifiedTimes[notifiedTimes.length - 1] : null;
+    emailLabelEl.textContent = lastNotified
+      ? `E-Mail-Versand · zuletzt ${fmtRelative(lastNotified)}`
+      : "E-Mail-Versand · noch keine gesendet";
+  } else {
+    emailEl.textContent = "Inaktiv";
+    emailEl.className = "stat-value bad";
+    emailLabelEl.textContent = "E-Mail-Versand · Zugangsdaten fehlen";
+  }
+
+  // Countdown zum nächsten Check
+  const countdownEl = document.getElementById("countdown");
+  if (lastRun) {
+    const nextRun = lastRun + intervalMs;
+    const remaining = Math.round((nextRun - now) / 1000);
+    if (remaining > 0) {
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      countdownEl.textContent = `${m}:${String(s).padStart(2, "0")}`;
+    } else {
+      countdownEl.textContent = "überfällig";
+    }
+  }
+
+  const sites = statusData.sites || {};
+  const rows = Object.values(sites);
+  const tbody = document.getElementById("siteRows");
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Noch keine Daten</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(site => {
+    let badge;
+    if (site.last_error) {
+      badge = `<span class="badge error">Fehler</span>`;
+    } else if (site.available) {
+      badge = `<span class="badge avail">✅ Bestellbar</span>`;
+    } else {
+      badge = `<span class="badge unavail">Nicht verfügbar</span>`;
+    }
+    let priceText = "–";
+    if (site.price !== null && site.price !== undefined) {
+      priceText = String(site.price).includes("€") ? site.price : `${site.price} EUR`;
+    }
+    const mailText = site.last_notified
+      ? fmtRelative(site.last_notified)
+      : '<span class="dim">–</span>';
+    let errorText = '<span class="dim">–</span>';
+    if (site.last_error) {
+      const count = site.consecutive_errors ? ` (${site.consecutive_errors}x in Folge)` : "";
+      const escaped = String(site.last_error).replace(/"/g, "&quot;");
+      errorText = `<span class="error-text" title="${escaped}">${escaped.slice(0, 40)}${escaped.length > 40 ? "…" : ""}${count}</span>`;
+    }
+    return `<tr>
+      <td class="site-name"><a href="${site.url}" target="_blank" rel="noopener">${site.name}</a></td>
+      <td>${badge}</td>
+      <td class="price">${priceText}</td>
+      <td>${mailText}</td>
+      <td>${errorText}</td>
+      <td>${site.runs ?? 0}</td>
+      <td>${fmtRelative(site.last_check_at)}</td>
+    </tr>`;
+  }).join("");
+}
+
+async function fetchStatus() {
+  try {
+    const res = await fetch("status.json?_=" + Date.now());
+    statusData = await res.json();
+  } catch (e) {
+    // Fetch fehlgeschlagen - alte Daten behalten, nur Anzeige nicht aktualisieren
+  }
+  render();
+}
+
+fetchStatus();
+setInterval(fetchStatus, REFRESH_MS);
+setInterval(render, 1000); // Countdown/Zeiten jede Sekunde weiterlaufen lassen
+</script>
+</body>
+</html>
