@@ -2,19 +2,19 @@
   "bauhaus": {
     "available": false,
     "last_notified": null,
-    "consecutive_errors": 2,
-    "last_attempt": "2026-07-02T12:00:11.405435"
+    "consecutive_errors": 3,
+    "last_attempt": "2026-07-02T12:10:13.099763"
   },
   "obi": {
     "available": false,
     "last_notified": null,
     "consecutive_errors": 0,
-    "last_attempt": "2026-07-02T12:00:11.405435"
+    "last_attempt": "2026-07-02T12:10:13.099763"
   },
   "amazon": {
     "available": false,
     "last_notified": null,
-    "consecutive_errors": 2,
-    "last_attempt": "2026-07-02T12:00:11.405435"
+    "consecutive_errors": 3,
+    "last_attempt": "2026-07-02T12:10:13.099763"
   }
 }
