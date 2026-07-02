@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import smtplib
+import subprocess
 import threading
 import time
 from datetime import datetime, timedelta
@@ -93,8 +94,6 @@ def load_status():
     return {
         "watcher_started_at": None,
         "interval_seconds": config.CHECK_INTERVAL_SECONDS,
-        "total_runs": 0,
-        "last_run_at": None,
         "sites": {},
     }
 
@@ -232,12 +231,15 @@ def status_site(status, product):
     return site
 
 
-def process_product(product, state, secrets, browser, now, status):
+def process_product(product, state, secrets, browser, now, status, scope="cloud"):
     site_status = status_site(status, product)
+    is_automated = product.get("automated", True)
 
-    if not product.get("automated", True):
-        # Wird bewusst nicht automatisch geprüft (z.B. Cloud-IP wird geblockt) -
-        # taucht im Dashboard nur mit Link zum manuellen Nachschauen auf.
+    # scope="cloud" (GitHub Actions): prüft nur Seiten, die dort nicht geblockt werden.
+    # scope="local" (Mac): prüft genau die anderen - Bauhaus/Amazon mit der eigenen IP.
+    if scope == "cloud" and not is_automated:
+        return
+    if scope == "local" and is_automated:
         return
 
     pstate = state.setdefault(
@@ -325,7 +327,7 @@ def process_product(product, state, secrets, browser, now, status):
     site_status["last_notified"] = pstate.get("last_notified")
 
 
-def run_cycle():
+def run_cycle(scope="cloud"):
     secrets = load_secrets()
     state = load_state()
     status = load_status()
@@ -334,11 +336,17 @@ def run_cycle():
     if status["watcher_started_at"] is None:
         status["watcher_started_at"] = now.isoformat()
     status["interval_seconds"] = config.CHECK_INTERVAL_SECONDS
-    status["total_runs"] += 1
-    status["last_run_at"] = now.isoformat()
     status["email_configured"] = bool(
         secrets.get("GMAIL_ADDRESS") and secrets.get("GMAIL_APP_PASSWORD")
     )
+
+    relevant_products = [
+        p for p in config.PRODUCTS
+        if p.get("automated", True) == (scope == "cloud")
+    ]
+    if not relevant_products:
+        save_status(status)
+        return
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -346,8 +354,8 @@ def run_cycle():
             args=["--disable-blink-features=AutomationControlled"],
         )
         try:
-            for product in config.PRODUCTS:
-                process_product(product, state, secrets, browser, now, status)
+            for product in relevant_products:
+                process_product(product, state, secrets, browser, now, status, scope)
         finally:
             browser.close()
 
@@ -361,6 +369,48 @@ def watcher_loop():
             run_cycle()
         except Exception:
             logging.exception("Unerwarteter Fehler im Watcher-Zyklus")
+        time.sleep(config.CHECK_INTERVAL_SECONDS)
+
+
+def git_cmd(*args):
+    return subprocess.run(
+        ["git", *args], cwd=BASE_DIR, capture_output=True, text=True,
+    )
+
+
+def sync_local_results_to_git():
+    """Holt zuerst den Cloud-Stand (z.B. OBI-Updates), committet dann die lokalen
+    Bauhaus/Amazon-Ergebnisse und pusht - mit ein paar Versuchen, falls die Cloud
+    zeitgleich auch gerade gepusht hat."""
+    git_cmd("pull", "--no-edit")
+    git_cmd("add", "state.json", str(STATUS_PATH.relative_to(BASE_DIR)))
+    diff = git_cmd("diff", "--cached", "--quiet")
+    if diff.returncode == 0:
+        return  # keine Änderungen
+    commit = git_cmd(
+        "-c", "user.name=Mac-Watcher", "-c", "user.email=mac-watcher@local",
+        "commit", "-m", "Status-Update (lokal: Bauhaus/Amazon)",
+    )
+    if commit.returncode != 0:
+        logging.error("git commit fehlgeschlagen: %s", commit.stderr.strip())
+        return
+    for attempt in range(4):
+        push = git_cmd("push")
+        if push.returncode == 0:
+            logging.info("Lokaler Status erfolgreich gepusht")
+            return
+        logging.info("Push-Konflikt (Versuch %d), hole Cloud-Stand erneut...", attempt + 1)
+        git_cmd("pull", "--no-edit")
+    logging.error("Push nach mehreren Versuchen fehlgeschlagen: %s", push.stderr.strip())
+
+
+def local_loop():
+    while True:
+        try:
+            run_cycle(scope="local")
+            sync_local_results_to_git()
+        except Exception:
+            logging.exception("Unerwarteter Fehler im lokalen Watcher-Zyklus")
         time.sleep(config.CHECK_INTERVAL_SECONDS)
 
 
@@ -385,10 +435,24 @@ def main():
         "--once", action="store_true",
         help="Nur einen einzelnen Durchlauf ausführen (zum Testen), kein Dauerbetrieb/Dashboard-Server",
     )
+    parser.add_argument(
+        "--scope", choices=["cloud", "local"], default="cloud",
+        help="cloud = nur nicht-geblockte Seiten (z.B. GitHub Actions), "
+             "local = nur die Seiten, die die Cloud-IP blockt (z.B. Mac)",
+    )
+    parser.add_argument(
+        "--local-loop", action="store_true",
+        help="Dauerbetrieb auf dem Mac: prüft periodisch die lokalen Seiten und pusht "
+             "die Ergebnisse ins selbe GitHub-Repo/Dashboard",
+    )
     args = parser.parse_args()
 
+    if args.local_loop:
+        local_loop()
+        return
+
     if args.once:
-        run_cycle()
+        run_cycle(scope=args.scope)
         return
 
     threading.Thread(target=watcher_loop, daemon=True).start()

@@ -83,7 +83,8 @@
   .badge.avail { background: rgba(46,204,113,0.15); color: var(--green); }
   .badge.unavail { background: rgba(139,147,161,0.15); color: var(--text-dim); }
   .badge.error { background: rgba(231,76,60,0.15); color: var(--red); }
-  .badge.manual { background: rgba(139,147,161,0.15); color: var(--text-dim); cursor: help; }
+  .badge.source-cloud { background: rgba(52,152,219,0.15); color: #5dade2; cursor: help; }
+  .badge.source-local { background: rgba(155,89,182,0.15); color: #bb8fce; cursor: help; }
 
   .price { font-variant-numeric: tabular-nums; }
   .empty { color: var(--text-dim); font-size: 13px; padding: 24px; text-align: center; }
@@ -131,6 +132,7 @@
       <thead>
         <tr>
           <th>Seite</th>
+          <th>Quelle</th>
           <th>Status</th>
           <th>Preis</th>
           <th>Mail gesendet</th>
@@ -140,7 +142,7 @@
         </tr>
       </thead>
       <tbody id="siteRows">
-        <tr><td colspan="7" class="empty">Lade Daten…</td></tr>
+        <tr><td colspan="8" class="empty">Lade Daten…</td></tr>
       </tbody>
     </table>
   </div>
@@ -182,9 +184,15 @@ function fmtClock(iso) {
 function render() {
   if (!statusData) return;
   const now = Date.now();
-  const lastRun = statusData.last_run_at ? new Date(statusData.last_run_at).getTime() : null;
+  const sites = statusData.sites || {};
+  const rows = Object.values(sites);
+
+  const checkTimes = rows.map(s => s.last_check_at).filter(Boolean).sort();
+  const lastRunIso = checkTimes.length ? checkTimes[checkTimes.length - 1] : null;
+  const lastRun = lastRunIso ? new Date(lastRunIso).getTime() : null;
   const intervalMs = (statusData.interval_seconds || 300) * 1000;
   const secondsSinceRun = lastRun ? (now - lastRun) / 1000 : Infinity;
+  const totalRuns = rows.reduce((sum, s) => sum + (s.runs || 0), 0);
 
   const dot = document.getElementById("dot");
   const label = document.getElementById("statusLabel");
@@ -197,20 +205,20 @@ function render() {
   } else if (secondsSinceRun < (statusData.interval_seconds * 3)) {
     dot.className = "dot green";
     label.textContent = "Aktiv";
-    detail.textContent = "Läuft in der Cloud via GitHub Actions, normaler Takt";
+    detail.textContent = "Cloud (GitHub Actions) + Mac laufen im normalen Takt";
   } else if (secondsSinceRun < 3600) {
     dot.className = "dot amber";
     label.textContent = "Verzögert";
-    detail.textContent = "GitHub Actions ist gerade langsamer als sonst (normal bei Cron-Jobs, kein Fehler)";
+    detail.textContent = "Gerade etwas langsamer als sonst (GitHub-Last oder Mac im Ruhezustand, meist kein Fehler)";
   } else {
     dot.className = "dot red";
     label.textContent = "Gestoppt";
-    detail.textContent = `Kein Check seit ${fmtDuration(statusData.last_run_at)}`;
+    detail.textContent = `Kein Check seit ${fmtDuration(lastRunIso)}`;
   }
 
   document.getElementById("statSince").textContent = fmtDuration(statusData.watcher_started_at);
-  document.getElementById("statRuns").textContent = statusData.total_runs ?? "–";
-  document.getElementById("statLastRun").textContent = fmtRelative(statusData.last_run_at);
+  document.getElementById("statRuns").textContent = totalRuns || "–";
+  document.getElementById("statLastRun").textContent = fmtRelative(lastRunIso);
 
   const emailEl = document.getElementById("statEmail");
   const emailLabelEl = document.getElementById("statEmailLabel");
@@ -243,26 +251,15 @@ function render() {
     }
   }
 
-  const sites = statusData.sites || {};
-  const rows = Object.values(sites);
   const tbody = document.getElementById("siteRows");
   if (rows.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty">Noch keine Daten</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">Noch keine Daten</td></tr>';
     return;
   }
   tbody.innerHTML = rows.map(site => {
-    if (site.automated === false) {
-      const reason = site.manual_reason ? ` title="${String(site.manual_reason).replace(/"/g, "&quot;")}"` : "";
-      return `<tr>
-        <td class="site-name"><a href="${site.url}" target="_blank" rel="noopener">${site.name}</a></td>
-        <td><span class="badge manual"${reason}>🔗 Manuell prüfen</span></td>
-        <td class="dim">–</td>
-        <td class="dim">–</td>
-        <td class="dim">–</td>
-        <td class="dim">–</td>
-        <td class="dim">–</td>
-      </tr>`;
-    }
+    const sourceBadge = site.automated
+      ? `<span class="badge source-cloud" title="Läuft automatisch via GitHub Actions">☁️ Cloud</span>`
+      : `<span class="badge source-local" title="${site.manual_reason ? String(site.manual_reason).replace(/"/g, '&quot;') + ' - läuft daher über den Mac' : 'Läuft über den Mac'}">💻 Mac</span>`;
     let badge;
     if (site.last_error) {
       badge = `<span class="badge error">Fehler</span>`;
@@ -286,6 +283,7 @@ function render() {
     }
     return `<tr>
       <td class="site-name"><a href="${site.url}" target="_blank" rel="noopener">${site.name}</a></td>
+      <td>${sourceBadge}</td>
       <td>${badge}</td>
       <td class="price">${priceText}</td>
       <td>${mailText}</td>
