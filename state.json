@@ -3,7 +3,7 @@
     "available": false,
     "last_notified": null,
     "consecutive_errors": 0,
-    "last_attempt": "2026-07-02T16:23:57.420536"
+    "last_attempt": "2026-07-02T16:25:04.584728"
   },
   "obi": {
     "available": false,
@@ -15,6 +15,6 @@
     "available": false,
     "last_notified": null,
     "consecutive_errors": 0,
-    "last_attempt": "2026-07-02T16:23:57.420536"
+    "last_attempt": "2026-07-02T16:25:04.584728"
   }
 }
