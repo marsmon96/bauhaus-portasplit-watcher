@@ -417,19 +417,40 @@ def sync_local_results_to_git():
     logging.error("Push nach mehreren Versuchen fehlgeschlagen: %s", push.stderr.strip())
 
 
+LAST_PUSH_PATH = BASE_DIR / ".last_push"
+
+
+def load_last_push():
+    if LAST_PUSH_PATH.exists():
+        try:
+            return datetime.fromisoformat(LAST_PUSH_PATH.read_text().strip())
+        except ValueError:
+            return None
+    return None
+
+
+def save_last_push(now):
+    LAST_PUSH_PATH.write_text(now.isoformat())
+
+
 def local_loop():
-    last_push = None
+    # In einer Datei statt im Prozessspeicher, damit ein Neustart des Dienstes
+    # (z.B. Codeänderung) nicht sofort wieder pusht und ein laufendes
+    # GitHub-Pages-Deployment abbricht.
+    last_push = load_last_push()
     while True:
         try:
             run_cycle(scope="local")
             # E-Mail-Versand läuft schon oben in run_cycle() und ist damit unabhängig
             # von GitHub - fürs Dashboard aber seltener pushen, denn ein GitHub-Pages-
-            # Deployment dauert selbst >2 Min. Bei jedem Push würde sonst der vorherige,
-            # noch laufende Deploy abgebrochen ("cancelled") und die Seite bliebe alt.
-            now = time.monotonic()
-            if last_push is None or (now - last_push) >= config.MIN_PUSH_INTERVAL_SECONDS:
+            # Deployment dauert selbst mehrere Minuten. Bei jedem Push würde sonst der
+            # vorherige, noch laufende Deploy abgebrochen ("cancelled") und die Seite
+            # bliebe alt.
+            now = datetime.now()
+            if last_push is None or (now - last_push).total_seconds() >= config.MIN_PUSH_INTERVAL_SECONDS:
                 sync_local_results_to_git()
                 last_push = now
+                save_last_push(now)
         except Exception:
             logging.exception("Unerwarteter Fehler im lokalen Watcher-Zyklus")
         time.sleep(config.LOCAL_CHECK_INTERVAL_SECONDS)

@@ -3,3 +3,4 @@ secrets.env
 *.log
 __pycache__/
 *.pyc
+.last_push

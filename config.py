@@ -55,8 +55,9 @@ CLOUD_CHECK_INTERVAL_SECONDS = 300
 LOCAL_CHECK_INTERVAL_SECONDS = 120
 
 # Mindestabstand zwischen zwei Git-Pushes vom Mac aus (unabhängig vom Check-Takt
-# oben). GitHub Pages braucht selbst >2 Min zum Deployen - pusht man schneller,
-# bricht jeder neue Push das noch laufende Deployment ab und die Dashboard-Seite
-# bleibt auf altem Stand hängen. E-Mail-Versand ist davon nicht betroffen, der
-# läuft direkt bei jedem Check, unabhängig von diesem Wert.
-MIN_PUSH_INTERVAL_SECONDS = 360
+# oben). GitHub Pages braucht zum Deployen beobachtet zwischen ~1 und ~6,5 Min -
+# pusht man schneller, bricht jeder neue Push das noch laufende Deployment ab und
+# die Dashboard-Seite bleibt auf altem Stand hängen. Grosszügig auf 15 Min gesetzt,
+# um auch langsame Deployments sicher durchlaufen zu lassen. E-Mail-Versand ist
+# davon nicht betroffen, der läuft direkt bei jedem Check, unabhängig von diesem Wert.
+MIN_PUSH_INTERVAL_SECONDS = 900
