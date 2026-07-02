@@ -25,7 +25,10 @@
   }
   .wrap { max-width: 880px; margin: 0 auto; }
   h1 { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
-  .subtitle { color: var(--text-dim); font-size: 13px; margin-bottom: 28px; }
+  .subtitle { color: var(--text-dim); font-size: 13px; }
+  .header-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 28px; gap: 16px; flex-wrap: wrap; }
+  .live-clock { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); white-space: nowrap; cursor: help; }
+  .live-clock .clock-date { font-size: 12px; font-weight: 500; color: var(--text-dim); display: block; text-align: right; }
 
   .status-bar {
     display: flex;
@@ -88,14 +91,20 @@
 
   .price { font-variant-numeric: tabular-nums; }
   .empty { color: var(--text-dim); font-size: 13px; padding: 24px; text-align: center; }
+  .section-title { font-size: 16px; font-weight: 600; margin: 32px 0 4px; }
   .error-text { color: var(--red); cursor: help; }
   .dim { color: var(--text-dim); }
 </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Midea PortaSplit Watcher</h1>
-    <div class="subtitle">Läuft in der Cloud via GitHub Actions · aktualisiert sich alle paar Sekunden</div>
+    <div class="header-row">
+      <div>
+        <h1>Midea PortaSplit Watcher</h1>
+        <div class="subtitle">Läuft in der Cloud via GitHub Actions · aktualisiert sich alle paar Sekunden</div>
+      </div>
+      <div class="live-clock" id="liveClock" title="Deine lokale Uhrzeit - tickt unabhängig vom Server, zeigt dir ob die Seite selbst noch aktiv läuft">–</div>
+    </div>
 
     <div class="status-bar">
       <div class="dot" id="dot"></div>
@@ -143,6 +152,21 @@
       </thead>
       <tbody id="siteRows">
         <tr><td colspan="8" class="empty">Lade Daten…</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-title">Verlauf</h2>
+    <div class="subtitle" style="margin-bottom: 12px;">Jedes Mal, wenn eine Seite von "nicht verfügbar" auf "bestellbar" wechselt</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Seite</th>
+          <th>Wurde verfügbar</th>
+          <th>Preis</th>
+        </tr>
+      </thead>
+      <tbody id="historyRows">
+        <tr><td colspan="3" class="empty">Lade Daten…</td></tr>
       </tbody>
     </table>
   </div>
@@ -295,6 +319,46 @@ function render() {
       <td>${fmtRelative(site.last_check_at)}</td>
     </tr>`;
   }).join("");
+
+  renderHistory(rows);
+}
+
+function renderHistory(rows) {
+  const historyTbody = document.getElementById("historyRows");
+  const entries = [];
+  for (const site of rows) {
+    for (const entry of (site.history || [])) {
+      entries.push({ name: site.name, url: site.url, ...entry });
+    }
+  }
+  entries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  if (entries.length === 0) {
+    historyTbody.innerHTML = '<tr><td colspan="3" class="empty">Noch keine Verfügbarkeit erkannt</td></tr>';
+    return;
+  }
+
+  historyTbody.innerHTML = entries.map(e => {
+    let priceText = "–";
+    if (e.price !== null && e.price !== undefined) {
+      priceText = String(e.price).includes("€") ? e.price : `${e.price} EUR`;
+    }
+    const dt = new Date(e.timestamp);
+    const when = `${dt.toLocaleDateString("de-DE")} ${dt.toLocaleTimeString("de-DE")}`;
+    return `<tr>
+      <td class="site-name"><a href="${e.url}" target="_blank" rel="noopener">${e.name}</a></td>
+      <td>${when}</td>
+      <td class="price">${priceText}</td>
+    </tr>`;
+  }).join("");
+}
+
+function updateClock() {
+  const el = document.getElementById("liveClock");
+  const now = new Date();
+  const time = now.toLocaleTimeString("de-DE");
+  const date = now.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" });
+  el.innerHTML = `${time}<span class="clock-date">${date}</span>`;
 }
 
 async function fetchStatus() {
@@ -308,8 +372,10 @@ async function fetchStatus() {
 }
 
 fetchStatus();
+updateClock();
 setInterval(fetchStatus, REFRESH_MS);
 setInterval(render, 1000); // Countdown/Zeiten jede Sekunde weiterlaufen lassen
+setInterval(updateClock, 1000);
 
 // Browser drosseln Timer in Hintergrund-Tabs stark - beim Zurückkehren sofort neu laden,
 // damit die Anzeige nicht eingefroren wirkt.

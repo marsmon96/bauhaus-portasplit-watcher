@@ -220,13 +220,17 @@ def send_email(secrets, subject, body):
     return True
 
 
+MAX_HISTORY_ENTRIES = 30
+
+
 def status_site(status, product):
     site = status["sites"].setdefault(
         product["id"],
         {"name": product["name"], "url": product["url"], "runs": 0, "last_check_at": None,
          "raw_status": None, "available": False, "price": None, "last_error": None,
-         "consecutive_errors": 0, "last_notified": None},
+         "consecutive_errors": 0, "last_notified": None, "history": []},
     )
+    site.setdefault("history", [])
     site["automated"] = product.get("automated", True)
     site["manual_reason"] = product.get("manual_reason")
     return site
@@ -298,6 +302,11 @@ def process_product(product, state, secrets, browser, now, status, scope="cloud"
     should_notify = False
     if is_available and not was_available:
         should_notify = True
+        site_status["history"].insert(0, {
+            "timestamp": now.isoformat(),
+            "price": result["price"],
+        })
+        site_status["history"] = site_status["history"][:MAX_HISTORY_ENTRIES]
     elif is_available and was_available:
         last_notified = pstate.get("last_notified")
         if last_notified:
