@@ -7,8 +7,8 @@
     "bauhaus": {
       "name": "Midea PortaSplit 12000 BTU (Bauhaus)",
       "url": "https://www.bauhaus.info/klimaanlagen/midea-klimasplitgeraet-portasplit-12000-btu/p/31934233",
-      "runs": 69,
-      "last_check_at": "2026-07-02T14:58:42.575826",
+      "runs": 70,
+      "last_check_at": "2026-07-02T14:59:02.439811",
       "raw_status": "OutOfStock/online_purchasability=false",
       "available": false,
       "price": "749.00",
@@ -35,8 +35,8 @@
     "amazon": {
       "name": "Midea Klimaanlage PortaSplit (Amazon)",
       "url": "https://www.amazon.de/Midea-Klimaanlage-Entfeuchten-Ventilieren-Silent-Modus/dp/B0D3PP64JS?th=1",
-      "runs": 69,
-      "last_check_at": "2026-07-02T14:58:42.575826",
+      "runs": 70,
+      "last_check_at": "2026-07-02T14:59:02.439811",
       "raw_status": "false",
       "available": false,
       "price": null,
@@ -47,5 +47,6 @@
       "manual_reason": "Amazon blockt GitHub-Actions-IPs (Captcha/Block)"
     }
   },
-  "email_configured": true
+  "email_configured": true,
+  "local_interval_seconds": 120
 }
