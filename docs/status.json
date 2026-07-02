@@ -27,8 +27,8 @@
     "obi": {
       "name": "Midea PortaSplit (OBI)",
       "url": "https://www.obi.de/p/8620890/midea-mobile-split-klimaanlage-portasplit",
-      "runs": 68,
-      "last_check_at": "2026-07-02T12:38:50.078865",
+      "runs": 69,
+      "last_check_at": "2026-07-02T17:22:07.143003",
       "raw_status": "InStoreOnly",
       "available": false,
       "price": 799.99,
@@ -36,7 +36,8 @@
       "consecutive_errors": 0,
       "last_notified": null,
       "automated": true,
-      "manual_reason": null
+      "manual_reason": null,
+      "history": []
     },
     "amazon": {
       "name": "Midea Klimaanlage PortaSplit (Amazon)",
@@ -55,5 +56,6 @@
     }
   },
   "email_configured": true,
-  "local_interval_seconds": 120
+  "local_interval_seconds": 120,
+  "cloud_interval_seconds": 300
 }
