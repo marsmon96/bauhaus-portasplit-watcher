@@ -25,11 +25,11 @@ RENOTIFY_HOURS = 24
 
 # Nach so vielen aufeinanderfolgenden Fehlern *pro Seite* wird eine Warn-Mail
 # geschickt, damit auffällt, dass der Checker für diese Seite nicht mehr funktioniert.
-# Bei 2-Minuten-Takt entsprechen 30 Fehlern ca. 1 Stunde.
-MAX_CONSECUTIVE_ERRORS_BEFORE_WARNING = 30
+# Bei 5-Minuten-Takt (GitHub Actions Cron) entsprechen 12 Fehlern ca. 1 Stunde.
+MAX_CONSECUTIVE_ERRORS_BEFORE_WARNING = 12
 
 # Ab MAX_CONSECUTIVE_ERRORS_BEFORE_WARNING wird diese Seite geschont: statt alle
-# 2 Minuten wird sie nur noch in diesem Abstand (Minuten) versucht, bis es wieder
+# 5 Minuten wird sie nur noch in diesem Abstand (Minuten) versucht, bis es wieder
 # klappt. Reduziert die Last auf eine Seite, die gerade blockt.
 BACKOFF_MINUTES_AFTER_WARNING = 30
 
@@ -37,6 +37,6 @@ STATE_FILE = "state.json"
 LOG_FILE = "watcher.log"
 SECRETS_FILE = "secrets.env"
 
-# Nur fürs Dashboard (Countdown-Anzeige) - muss zum StartInterval in der
-# .plist übereinstimmen, ändert das eigentliche Intervall nicht.
-CHECK_INTERVAL_SECONDS = 120
+# Nur fürs Dashboard (Countdown-Anzeige) - muss zum Cron-Schedule in
+# .github/workflows/check.yml übereinstimmen, ändert das eigentliche Intervall nicht.
+CHECK_INTERVAL_SECONDS = 300

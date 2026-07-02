@@ -93,7 +93,7 @@
 <body>
   <div class="wrap">
     <h1>Midea PortaSplit Watcher</h1>
-    <div class="subtitle">Automatische Verfügbarkeitsprüfung · aktualisiert sich alle paar Sekunden</div>
+    <div class="subtitle">Läuft in der Cloud via GitHub Actions · aktualisiert sich alle paar Sekunden</div>
 
     <div class="status-bar">
       <div class="dot" id="dot"></div>
@@ -182,7 +182,7 @@ function render() {
   if (!statusData) return;
   const now = Date.now();
   const lastRun = statusData.last_run_at ? new Date(statusData.last_run_at).getTime() : null;
-  const intervalMs = (statusData.interval_seconds || 120) * 1000;
+  const intervalMs = (statusData.interval_seconds || 300) * 1000;
   const secondsSinceRun = lastRun ? (now - lastRun) / 1000 : Infinity;
 
   const dot = document.getElementById("dot");
@@ -196,11 +196,11 @@ function render() {
   } else if (secondsSinceRun < (statusData.interval_seconds * 3)) {
     dot.className = "dot green";
     label.textContent = "Aktiv";
-    detail.textContent = "Watcher läuft normal im Takt";
-  } else if (secondsSinceRun < 1800) {
+    detail.textContent = "Läuft in der Cloud via GitHub Actions, normaler Takt";
+  } else if (secondsSinceRun < 3600) {
     dot.className = "dot amber";
     label.textContent = "Verzögert";
-    detail.textContent = "Läuft evtl. gerade nicht (Mac im Ruhezustand?)";
+    detail.textContent = "GitHub Actions ist gerade langsamer als sonst (normal bei Cron-Jobs, kein Fehler)";
   } else {
     dot.className = "dot red";
     label.textContent = "Gestoppt";
