@@ -296,6 +296,12 @@ async function fetchStatus() {
 fetchStatus();
 setInterval(fetchStatus, REFRESH_MS);
 setInterval(render, 1000); // Countdown/Zeiten jede Sekunde weiterlaufen lassen
+
+// Browser drosseln Timer in Hintergrund-Tabs stark - beim Zurückkehren sofort neu laden,
+// damit die Anzeige nicht eingefroren wirkt.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") fetchStatus();
+});
 </script>
 </body>
 </html>
