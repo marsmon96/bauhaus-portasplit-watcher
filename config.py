@@ -1,21 +1,29 @@
+# "automated": False bedeutet - wird NICHT automatisch geprüft (z.B. weil die Seite
+# Cloud-/Rechenzentrums-IPs wie die von GitHub Actions blockt), taucht im Dashboard
+# aber trotzdem mit direktem Link auf, damit man selbst manuell nachschauen kann.
 PRODUCTS = [
     {
         "id": "bauhaus",
         "name": "Midea PortaSplit 12000 BTU (Bauhaus)",
         "url": "https://www.bauhaus.info/klimaanlagen/midea-klimasplitgeraet-portasplit-12000-btu/p/31934233",
         "site": "bauhaus",
+        "automated": False,
+        "manual_reason": "Cloudflare blockt GitHub-Actions-IPs (403)",
     },
     {
         "id": "obi",
         "name": "Midea PortaSplit (OBI)",
         "url": "https://www.obi.de/p/8620890/midea-mobile-split-klimaanlage-portasplit",
         "site": "obi",
+        "automated": True,
     },
     {
         "id": "amazon",
         "name": "Midea Klimaanlage PortaSplit (Amazon)",
         "url": "https://www.amazon.de/Midea-Klimaanlage-Entfeuchten-Ventilieren-Silent-Modus/dp/B0D3PP64JS?th=1",
         "site": "amazon",
+        "automated": False,
+        "manual_reason": "Amazon blockt GitHub-Actions-IPs (Captcha/Block)",
     },
 ]
 

@@ -83,6 +83,7 @@
   .badge.avail { background: rgba(46,204,113,0.15); color: var(--green); }
   .badge.unavail { background: rgba(139,147,161,0.15); color: var(--text-dim); }
   .badge.error { background: rgba(231,76,60,0.15); color: var(--red); }
+  .badge.manual { background: rgba(139,147,161,0.15); color: var(--text-dim); cursor: help; }
 
   .price { font-variant-numeric: tabular-nums; }
   .empty { color: var(--text-dim); font-size: 13px; padding: 24px; text-align: center; }
@@ -250,6 +251,18 @@ function render() {
     return;
   }
   tbody.innerHTML = rows.map(site => {
+    if (site.automated === false) {
+      const reason = site.manual_reason ? ` title="${String(site.manual_reason).replace(/"/g, "&quot;")}"` : "";
+      return `<tr>
+        <td class="site-name"><a href="${site.url}" target="_blank" rel="noopener">${site.name}</a></td>
+        <td><span class="badge manual"${reason}>🔗 Manuell prüfen</span></td>
+        <td class="dim">–</td>
+        <td class="dim">–</td>
+        <td class="dim">–</td>
+        <td class="dim">–</td>
+        <td class="dim">–</td>
+      </tr>`;
+    }
     let badge;
     if (site.last_error) {
       badge = `<span class="badge error">Fehler</span>`;

@@ -221,20 +221,29 @@ def send_email(secrets, subject, body):
 
 
 def status_site(status, product):
-    return status["sites"].setdefault(
+    site = status["sites"].setdefault(
         product["id"],
         {"name": product["name"], "url": product["url"], "runs": 0, "last_check_at": None,
          "raw_status": None, "available": False, "price": None, "last_error": None,
          "consecutive_errors": 0, "last_notified": None},
     )
+    site["automated"] = product.get("automated", True)
+    site["manual_reason"] = product.get("manual_reason")
+    return site
 
 
 def process_product(product, state, secrets, browser, now, status):
+    site_status = status_site(status, product)
+
+    if not product.get("automated", True):
+        # Wird bewusst nicht automatisch geprüft (z.B. Cloud-IP wird geblockt) -
+        # taucht im Dashboard nur mit Link zum manuellen Nachschauen auf.
+        return
+
     pstate = state.setdefault(
         product["id"],
         {"available": False, "last_notified": None, "consecutive_errors": 0, "last_attempt": None},
     )
-    site_status = status_site(status, product)
 
     if pstate.get("consecutive_errors", 0) >= config.MAX_CONSECUTIVE_ERRORS_BEFORE_WARNING:
         last_attempt = pstate.get("last_attempt")

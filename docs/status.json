@@ -1,8 +1,8 @@
 {
   "watcher_started_at": "2026-07-02T11:29:04.195840",
   "interval_seconds": 300,
-  "total_runs": 66,
-  "last_run_at": "2026-07-02T12:10:13.099763",
+  "total_runs": 67,
+  "last_run_at": "2026-07-02T14:36:56.276037",
   "sites": {
     "bauhaus": {
       "name": "Midea PortaSplit 12000 BTU (Bauhaus)",
@@ -14,19 +14,23 @@
       "price": "749.00",
       "last_error": "Unerwarteter HTTP-Status: 403",
       "consecutive_errors": 3,
-      "last_notified": null
+      "last_notified": null,
+      "automated": false,
+      "manual_reason": "Cloudflare blockt GitHub-Actions-IPs (403)"
     },
     "obi": {
       "name": "Midea PortaSplit (OBI)",
       "url": "https://www.obi.de/p/8620890/midea-mobile-split-klimaanlage-portasplit",
-      "runs": 66,
-      "last_check_at": "2026-07-02T12:10:13.099763",
+      "runs": 67,
+      "last_check_at": "2026-07-02T14:36:56.276037",
       "raw_status": "InStoreOnly",
       "available": false,
       "price": 799.99,
       "last_error": null,
       "consecutive_errors": 0,
-      "last_notified": null
+      "last_notified": null,
+      "automated": true,
+      "manual_reason": null
     },
     "amazon": {
       "name": "Midea Klimaanlage PortaSplit (Amazon)",
@@ -38,7 +42,9 @@
       "price": null,
       "last_error": "add-to-cart-Attribut nicht gefunden (Seitenstruktur evtl. ge\u00e4ndert, oder Captcha/Block)",
       "consecutive_errors": 3,
-      "last_notified": null
+      "last_notified": null,
+      "automated": false,
+      "manual_reason": "Amazon blockt GitHub-Actions-IPs (Captcha/Block)"
     }
   },
   "email_configured": true
