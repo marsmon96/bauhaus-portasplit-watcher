@@ -409,10 +409,18 @@ def sync_local_results_to_git():
 
 
 def local_loop():
+    last_push = None
     while True:
         try:
             run_cycle(scope="local")
-            sync_local_results_to_git()
+            # E-Mail-Versand läuft schon oben in run_cycle() und ist damit unabhängig
+            # von GitHub - fürs Dashboard aber seltener pushen, denn ein GitHub-Pages-
+            # Deployment dauert selbst >2 Min. Bei jedem Push würde sonst der vorherige,
+            # noch laufende Deploy abgebrochen ("cancelled") und die Seite bliebe alt.
+            now = time.monotonic()
+            if last_push is None or (now - last_push) >= config.MIN_PUSH_INTERVAL_SECONDS:
+                sync_local_results_to_git()
+                last_push = now
         except Exception:
             logging.exception("Unerwarteter Fehler im lokalen Watcher-Zyklus")
         time.sleep(config.LOCAL_CHECK_INTERVAL_SECONDS)
