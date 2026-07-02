@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent
 STATE_PATH = BASE_DIR / config.STATE_FILE
 LOG_PATH = BASE_DIR / config.LOG_FILE
 SECRETS_PATH = BASE_DIR / config.SECRETS_FILE
-WEB_DIR = BASE_DIR / "web"
+WEB_DIR = BASE_DIR / "docs"
 STATUS_PATH = WEB_DIR / "status.json"
 
 logging.basicConfig(

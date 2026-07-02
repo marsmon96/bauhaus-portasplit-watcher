@@ -3,18 +3,18 @@
     "available": false,
     "last_notified": null,
     "consecutive_errors": 0,
-    "last_attempt": "2026-07-02T13:33:04.642078"
+    "last_attempt": "2026-07-02T13:46:26.490841"
   },
   "obi": {
     "available": false,
     "last_notified": null,
     "consecutive_errors": 0,
-    "last_attempt": "2026-07-02T13:33:04.642078"
+    "last_attempt": "2026-07-02T13:46:26.490841"
   },
   "amazon": {
     "available": false,
     "last_notified": null,
     "consecutive_errors": 0,
-    "last_attempt": "2026-07-02T13:33:04.642078"
+    "last_attempt": "2026-07-02T13:46:26.490841"
   }
 }
