@@ -190,7 +190,8 @@ function render() {
   const checkTimes = rows.map(s => s.last_check_at).filter(Boolean).sort();
   const lastRunIso = checkTimes.length ? checkTimes[checkTimes.length - 1] : null;
   const lastRun = lastRunIso ? new Date(lastRunIso).getTime() : null;
-  const intervalMs = (statusData.interval_seconds || 300) * 1000;
+  // Für den Countdown das schnellere (lokale) Intervall bevorzugen, falls bekannt.
+  const intervalMs = (statusData.local_interval_seconds || statusData.cloud_interval_seconds || 300) * 1000;
   const secondsSinceRun = lastRun ? (now - lastRun) / 1000 : Infinity;
   const totalRuns = rows.reduce((sum, s) => sum + (s.runs || 0), 0);
 
@@ -198,11 +199,13 @@ function render() {
   const label = document.getElementById("statusLabel");
   const detail = document.getElementById("statusDetail");
 
+  // Feste Schwellenwerte statt intervallabhängig, da Cloud (~5 Min) und Mac (~2 Min)
+  // unterschiedlich schnell laufen und beide in denselben Zeitstempel einfließen.
   if (!lastRun) {
     dot.className = "dot";
     label.textContent = "Noch kein Lauf";
     detail.textContent = "Warte auf ersten Check";
-  } else if (secondsSinceRun < (statusData.interval_seconds * 3)) {
+  } else if (secondsSinceRun < 900) {
     dot.className = "dot green";
     label.textContent = "Aktiv";
     detail.textContent = "Cloud (GitHub Actions) + Mac laufen im normalen Takt";

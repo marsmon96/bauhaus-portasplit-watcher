@@ -93,7 +93,8 @@ def load_status():
         return json.loads(STATUS_PATH.read_text())
     return {
         "watcher_started_at": None,
-        "interval_seconds": config.CHECK_INTERVAL_SECONDS,
+        "cloud_interval_seconds": config.CLOUD_CHECK_INTERVAL_SECONDS,
+        "local_interval_seconds": config.LOCAL_CHECK_INTERVAL_SECONDS,
         "sites": {},
     }
 
@@ -335,7 +336,10 @@ def run_cycle(scope="cloud"):
 
     if status["watcher_started_at"] is None:
         status["watcher_started_at"] = now.isoformat()
-    status["interval_seconds"] = config.CHECK_INTERVAL_SECONDS
+    if scope == "cloud":
+        status["cloud_interval_seconds"] = config.CLOUD_CHECK_INTERVAL_SECONDS
+    else:
+        status["local_interval_seconds"] = config.LOCAL_CHECK_INTERVAL_SECONDS
     status["email_configured"] = bool(
         secrets.get("GMAIL_ADDRESS") and secrets.get("GMAIL_APP_PASSWORD")
     )
@@ -369,7 +373,7 @@ def watcher_loop():
             run_cycle()
         except Exception:
             logging.exception("Unerwarteter Fehler im Watcher-Zyklus")
-        time.sleep(config.CHECK_INTERVAL_SECONDS)
+        time.sleep(config.CLOUD_CHECK_INTERVAL_SECONDS)
 
 
 def git_cmd(*args):
@@ -411,7 +415,7 @@ def local_loop():
             sync_local_results_to_git()
         except Exception:
             logging.exception("Unerwarteter Fehler im lokalen Watcher-Zyklus")
-        time.sleep(config.CHECK_INTERVAL_SECONDS)
+        time.sleep(config.LOCAL_CHECK_INTERVAL_SECONDS)
 
 
 class DashboardHandler(http.server.SimpleHTTPRequestHandler):

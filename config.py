@@ -45,6 +45,11 @@ STATE_FILE = "state.json"
 LOG_FILE = "watcher.log"
 SECRETS_FILE = "secrets.env"
 
-# Nur fürs Dashboard (Countdown-Anzeige) - muss zum Cron-Schedule in
-# .github/workflows/check.yml übereinstimmen, ändert das eigentliche Intervall nicht.
-CHECK_INTERVAL_SECONDS = 300
+# Cloud (GitHub Actions): nur fürs Dashboard (Countdown-Anzeige) - muss zum
+# Cron-Schedule in .github/workflows/check.yml übereinstimmen, ändert das
+# eigentliche Intervall dort nicht (das steuert ausschließlich die cron-Zeile).
+CLOUD_CHECK_INTERVAL_SECONDS = 300
+
+# Mac (--local-loop): steuert das eigentliche Intervall direkt, da hier kein
+# Cron-Dienst mit Mindestabstand im Weg steht wie bei GitHub Actions.
+LOCAL_CHECK_INTERVAL_SECONDS = 120
