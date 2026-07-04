@@ -42,8 +42,8 @@
     "amazon": {
       "name": "Midea Klimaanlage PortaSplit (Amazon)",
       "url": "https://www.amazon.de/Midea-Klimaanlage-Entfeuchten-Ventilieren-Silent-Modus/dp/B0D3PP64JS?th=1",
-      "runs": 1275,
-      "last_check_at": "2026-07-05T00:40:40.389656",
+      "runs": 1283,
+      "last_check_at": "2026-07-05T00:57:20.585248",
       "raw_status": "false",
       "available": false,
       "price": null,
