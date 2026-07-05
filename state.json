@@ -14,7 +14,7 @@
   "amazon": {
     "available": false,
     "last_notified": null,
-    "consecutive_errors": 0,
-    "last_attempt": "2026-07-05T13:46:01.813960"
+    "consecutive_errors": 1,
+    "last_attempt": "2026-07-05T14:00:43.781908"
   }
 }
