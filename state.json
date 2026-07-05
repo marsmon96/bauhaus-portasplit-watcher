@@ -2,8 +2,8 @@
   "bauhaus": {
     "available": false,
     "last_notified": "2026-07-02T16:59:03.063308",
-    "consecutive_errors": 110,
-    "last_attempt": "2026-07-05T13:31:20.793248"
+    "consecutive_errors": 111,
+    "last_attempt": "2026-07-05T14:05:37.692670"
   },
   "obi": {
     "available": false,
@@ -15,6 +15,6 @@
     "available": false,
     "last_notified": null,
     "consecutive_errors": 1,
-    "last_attempt": "2026-07-05T14:00:43.781908"
+    "last_attempt": "2026-07-05T14:16:04.654409"
   }
 }
